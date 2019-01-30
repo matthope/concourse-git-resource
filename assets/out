@@ -30,6 +30,7 @@ configure_credentials $payload
 uri=$(jq -r '.source.uri // ""' < $payload)
 branch=$(jq -r '.source.branch // ""' < $payload)
 git_config_payload=$(jq -r '.source.git_config // []' < $payload)
+tag_filter=$(jq -r '.source.tag_filter // ""' < $payload)
 repository=$(jq -r '.params.repository // ""' < $payload)
 tag=$(jq -r '.params.tag // ""' < $payload)
 tag_prefix=$(jq -r '.params.tag_prefix // ""' < $payload)
@@ -196,7 +197,14 @@ else
   add_and_push_notes
 fi
 
-jq -n "{
-  version: {ref: $(git rev-parse HEAD | jq -R .)},
-  metadata: $(git_metadata)
-}" >&3
+if [ -z "$tag_name" ] || [ -z "$tag_filter" ]; then
+  jq -n "{
+    version: {ref: $(git rev-parse HEAD | jq -R .)},
+    metadata: $(git_metadata)
+  }" >&3
+else
+  jq -n "{
+      version: {commit: $(git rev-parse HEAD | jq -R .), ref: \"$tag_name\"},
+      metadata: $(git_metadata)
+    }"   >&3
+fi

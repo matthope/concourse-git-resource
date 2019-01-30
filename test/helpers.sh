@@ -783,6 +783,20 @@ put_uri_with_tag_and_annotation() {
   }" | ${resource_dir}/out "$2" | tee /dev/stderr
 }
 
+put_uri_with_tag_and_tagfilter() {
+  jq -n "{
+    source: {
+      uri: $(echo $1 | jq -R .),
+      branch: \"master\",
+      tag_filter: \".*\",
+    },
+    params: {
+      tag: $(echo $3 | jq -R .),
+      repository: $(echo $4 | jq -R .)
+    }
+  }" | ${resource_dir}/out "$2" | tee /dev/stderr
+}
+
 put_uri_with_rebase_with_tag() {
   jq -n "{
     source: {
